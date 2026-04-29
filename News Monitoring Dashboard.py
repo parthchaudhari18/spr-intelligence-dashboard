@@ -95,7 +95,7 @@ st.title("🛢️ SPR Intelligence Dashboard")
 if st.button("🔄 Refresh Data"):
 
     awards_df = load_award_data()   # ✅ SOURCE OF TRUTH
-    news_df = fetch_all_news(awards_df["company"].unique())
+    news_df = fetch_all_news(list(awards_df["company"].unique()))
 
     # -----------------------------
     # ✅ KPIs (CORRECT)

@@ -164,15 +164,8 @@ if st.button("🔄 Refresh Dashboard"):
 
     with tab1:
          st.components.v1.iframe(
-             "https://www.worldmonitor.app/",
+             "https://openinframap.org/#3.99/22.87/16.01",
              height=500
-         )
-
-    with tab2:
-         st.components.v1.iframe(
-             "https://flowmaps.llnl.gov/",
-             height=500
-         )
 
     # 📊 CHARTS
     st.subheader("📊 Company Allocation")

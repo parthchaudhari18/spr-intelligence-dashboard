@@ -119,13 +119,52 @@ if st.button("🔄 Refresh Dashboard"):
 
     st.markdown("---")
 
-    # 📢 TICKER
+    # -----------------------------
+    # 📢 STOCK-STYLE NEWS TICKER
+    # -----------------------------
     if not news_df.empty:
-        ticker = " 🔹 ".join(news_df["headline"].head(10))
-        st.markdown(f"<marquee style='color:#00ffcc'>{ticker}</marquee>", unsafe_allow_html=True)
 
-    st.markdown("---")
+        headlines = "  ♦  ".join(news_df["headline"].head(15).tolist())
 
+        ticker_html = f"""
+        <style>
+        .ticker-container {{
+            width: 100%;
+            overflow: hidden;
+            background: linear-gradient(90deg, #000000, #1a1a1a);
+            border-top: 2px solid #00ffcc;
+            border-bottom: 2px solid #00ffcc;
+            padding: 10px 0;
+            position: relative;
+        }}
+
+        .ticker-text {{
+            display: inline-block;
+            white-space: nowrap;
+            animation: scroll-left 25s linear infinite;
+            font-size: 18px;
+            font-weight: 600;
+            color: #00ffcc;
+        }}
+
+        @keyframes scroll-left {{
+            0% {{
+                transform: translateX(100%);
+            }}
+            100% {{
+                transform: translateX(-100%);
+            }}
+        }}
+        </style>
+
+        <div class="ticker-container">
+            <div class="ticker-text">
+                {headlines}
+            </div>
+        </div>
+        """
+
+        st.markdown(ticker_html, unsafe_allow_html=True)
     # 🎞️ NEWS SLIDES
     st.subheader("📰 Live News Slides")
 
@@ -154,19 +193,7 @@ if st.button("🔄 Refresh Dashboard"):
             time.sleep(2)
 
     st.markdown("---")
-    # -----------------------------
-    # 🌍 MAP TABS
-    # -----------------------------
-    st.markdown("---")
-    st.subheader("🌍 Global Intelligence")
-
-    tab1, tab2 = st.tabs(["World Monitor", "Energy Flow"])
-
-    with tab1:
-         st.components.v1.iframe(
-             "https://openinframap.org/#3.99/22.87/16.01",
-             height=500
-         )
+   
     # 📊 CHARTS
     st.subheader("📊 Company Allocation")
     st.bar_chart(awards.groupby("company")["volume"].sum())

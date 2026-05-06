@@ -166,57 +166,57 @@ if st.button("🔄 Refresh Dashboard"):
 
         st.markdown(ticker_html, unsafe_allow_html=True)
     # -----------------------------
-# 📢 PROFESSIONAL STOCK TICKER (SLOW + SMOOTH)
-# -----------------------------
-if not news_df.empty:
-
-    headlines = "   ◆   ".join(
-        [f"{row['company']}: {row['headline']}" for _, row in news_df.head(12).iterrows()]
-    )
-
-    ticker_html = f"""
-    <style>
-    .ticker-container {{
-        width: 100%;
-        overflow: hidden;
-        background: #0a0a0a;
-        border-top: 1px solid #00ffcc;
-        border-bottom: 1px solid #00ffcc;
-        padding: 12px 0;
-    }}
-
-    .ticker-track {{
-        display: flex;
-        width: max-content;
-        animation: scroll-left 60s linear infinite;
-    }}
-
-    .ticker-item {{
-        margin-right: 80px;
-        font-size: 17px;
-        font-weight: 500;
-        color: #00ffcc;
-    }}
-
-    @keyframes scroll-left {{
-        from {{
-            transform: translateX(0%);
+    # 📢 PROFESSIONAL STOCK TICKER (SLOW + SMOOTH)
+    # -----------------------------
+    if not news_df.empty:
+    
+        headlines = "   ◆   ".join(
+            [f"{row['company']}: {row['headline']}" for _, row in news_df.head(12).iterrows()]
+        )
+    
+        ticker_html = f"""
+        <style>
+        .ticker-container {{
+            width: 100%;
+            overflow: hidden;
+            background: #0a0a0a;
+            border-top: 1px solid #00ffcc;
+            border-bottom: 1px solid #00ffcc;
+            padding: 12px 0;
         }}
-        to {{
-            transform: translateX(-50%);
+    
+        .ticker-track {{
+            display: flex;
+            width: max-content;
+            animation: scroll-left 60s linear infinite;
         }}
-    }}
-    </style>
-
-    <div class="ticker-container">
-        <div class="ticker-track">
-            {"".join([f"<div class='ticker-item'>{h}</div>" for h in headlines.split("   ◆   ")])}
-            {"".join([f"<div class='ticker-item'>{h}</div>" for h in headlines.split("   ◆   ")])}
+    
+        .ticker-item {{
+            margin-right: 80px;
+            font-size: 17px;
+            font-weight: 500;
+            color: #00ffcc;
+        }}
+    
+        @keyframes scroll-left {{
+            from {{
+                transform: translateX(0%);
+            }}
+            to {{
+                transform: translateX(-50%);
+            }}
+        }}
+        </style>
+    
+        <div class="ticker-container">
+            <div class="ticker-track">
+                {"".join([f"<div class='ticker-item'>{h}</div>" for h in headlines.split("   ◆   ")])}
+                {"".join([f"<div class='ticker-item'>{h}</div>" for h in headlines.split("   ◆   ")])}
+            </div>
         </div>
-    </div>
-    """
-
-    st.markdown(ticker_html, unsafe_allow_html=True)
+        """
+    
+        st.markdown(ticker_html, unsafe_allow_html=True)
     # 📊 CHARTS
     st.subheader("📊 Company Allocation")
     st.bar_chart(awards.groupby("company")["volume"].sum())

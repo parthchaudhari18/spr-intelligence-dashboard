@@ -230,6 +230,35 @@ if st.button("🔄 Refresh Dashboard"):
     # 📋 TABLE
     st.subheader("📋 SPR Data")
     st.dataframe(awards)
+    # -----------------------------
+    # 📰 NEWS TABLE (RESTORED)
+    # -----------------------------
+    st.markdown("---")
+    st.subheader("📰 News Intelligence Table")
+    
+    if not news_df.empty:
+    
+        # Clean + sort for better usability
+        display_news = news_df.copy()
+    
+        # Convert date properly
+        display_news["date"] = pd.to_datetime(display_news["date"], errors="coerce")
+    
+        # Sort by relevance and recency
+        display_news = display_news.sort_values(
+            by=["relevance", "date"],
+            ascending=[False, False]
+        )
+    
+        # Select columns
+        display_news = display_news[
+            ["company", "headline", "date", "source", "relevance"]
+        ]
+    
+        st.dataframe(display_news, use_container_width=True)
+    
+    else:
+        st.info("No news available")
 
     # 📥 DOWNLOAD
     with open(file_path, "rb") as f:

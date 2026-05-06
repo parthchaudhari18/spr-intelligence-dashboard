@@ -1,73 +1,53 @@
 import pandas as pd
 import requests
 import streamlit as st
+import os
+from datetime import datetime
+import time
 
 # -----------------------------
-# 🔑 API KEY (move to secrets later)
+# 🔑 SECURE API KEY
 # -----------------------------
-NEWS_API_KEY = "c074f6b4036a4589a36914103ef44c92"
+NEWS_API_KEY = st.secrets["NEWS_API_KEY"]
 
 # -----------------------------
-# 📄 SPR AWARD DATA (SOURCE OF TRUTH)
+# 📄 DATA
 # -----------------------------
 @st.cache_data
 def load_award_data():
     data = [
-        # Release 1
-        {"company": "BP Products North America", "volume": 5000000, "release": "R1"},
-        {"company": "Energy Transfer Crude Marketing LLC", "volume": 375000, "release": "R1"},
-        {"company": "Gunvor USA LLC", "volume": 3085000, "release": "R1"},
-        {"company": "Marathon Petroleum Company LP", "volume": 7700000, "release": "R1"},
-        {"company": "Mercuria Energy America LLC", "volume": 2000000, "release": "R1"},
         {"company": "Shell Trading (US) Company", "volume": 16200000, "release": "R1"},
         {"company": "Trafigura Trading LLC", "volume": 8860000, "release": "R1"},
+        {"company": "Marathon Petroleum Company LP", "volume": 7700000, "release": "R1"},
+        {"company": "BP Products North America", "volume": 5000000, "release": "R1"},
+        {"company": "Gunvor USA LLC", "volume": 3085000, "release": "R1"},
+        {"company": "Mercuria Energy America LLC", "volume": 2000000, "release": "R1"},
         {"company": "Vitol Inc.", "volume": 2000000, "release": "R1"},
-
-        # Release 1.a
-        {"company": "Gunvor USA LLC", "volume": 1100000, "release": "R1.a"},
-        {"company": "Macquarie Commodities Trading US", "volume": 2000000, "release": "R1.a"},
-        {"company": "Phillips 66 Company", "volume": 2900000, "release": "R1.a"},
-        {"company": "Trafigura Trading LLC", "volume": 2480000, "release": "R1.a"},
-
-        # Release 1.b
-        {"company": "Alon USA", "volume": 1000000, "release": "R1.b"},
-        {"company": "BP Products North America", "volume": 1000000, "release": "R1.b"},
-        {"company": "Energy Transfer Crude Marketing", "volume": 1100000, "release": "R1.b"},
-        {"company": "ExxonMobil Oil Corporation", "volume": 3000000, "release": "R1.b"},
-        {"company": "Macquarie Commodities Trading US", "volume": 2500000, "release": "R1.b"},
-        {"company": "Marathon Petroleum Company", "volume": 2000000, "release": "R1.b"},
-        {"company": "Shell Trading (US) Company", "volume": 1900000, "release": "R1.b"},
-        {"company": "Trafigura Trading LLC", "volume": 10030000, "release": "R1.b"},
-        {"company": "Vitol", "volume": 3500000, "release": "R1.b"},
+        {"company": "Energy Transfer Crude Marketing LLC", "volume": 375000, "release": "R1"},
     ]
     return pd.DataFrame(data)
 
 # -----------------------------
-# 🧠 RELEVANCE SCORING
+# 🧠 RELEVANCE
 # -----------------------------
 def relevance_score(text):
     keywords = ["spr", "oil", "crude", "energy", "petroleum", "refinery", "doe"]
-    text = text.lower()
-    return sum(1 for k in keywords if k in text)
+    return sum(1 for k in keywords if k in text.lower())
 
 # -----------------------------
-# 📰 FETCH NEWS (NO MERGE)
+# 📰 NEWS
 # -----------------------------
-@st.cache_data(ttl=900)
-def fetch_all_news(companies):
+@st.cache_data(ttl=600)
+def fetch_news(companies):
     all_news = []
 
     for company in companies:
-        query = f'"{company}" AND (oil OR crude OR energy OR petroleum OR refinery OR DOE)'
+        query = f'"{company}" AND (oil OR crude OR energy OR petroleum)'
 
-        url = (
-            f"https://newsapi.org/v2/everything?"
-            f"q={query}&language=en&sortBy=publishedAt&pageSize=5&apiKey={NEWS_API_KEY}"
-        )
+        url = f"https://newsapi.org/v2/everything?q={query}&pageSize=5&apiKey={NEWS_API_KEY}"
 
         try:
-            res = requests.get(url)
-            articles = res.json().get("articles", [])
+            articles = requests.get(url).json().get("articles", [])
         except:
             continue
 
@@ -87,79 +67,109 @@ def fetch_all_news(companies):
     return pd.DataFrame(all_news)
 
 # -----------------------------
+# 📥 SAVE
+# -----------------------------
+def save_news(news_df):
+    path = "spr_news_log.xlsx"
+    news_df["logged_at"] = datetime.now()
+
+    if os.path.exists(path):
+        old = pd.read_excel(path)
+        news_df = pd.concat([old, news_df]).drop_duplicates(subset=["headline"])
+
+    news_df.to_excel(path, index=False)
+    return path
+
+# -----------------------------
+# 🧠 AI SUMMARY
+# -----------------------------
+def generate_summary(df):
+    top = df.groupby("company")["volume"].sum().idxmax()
+    total = df["volume"].sum()
+
+    return f"""
+    Total of {total:,} barrels distributed.  
+    {top} is the largest recipient.  
+    Market is concentrated among few key players.  
+    """
+
+# -----------------------------
 # 🎯 UI
 # -----------------------------
 st.set_page_config(layout="wide")
-st.title("🛢️ SPR Intelligence Dashboard")
+st.title("🛢️ SPR Executive Intelligence Dashboard")
 
-if st.button("🔄 Refresh Data"):
+# AUTO REFRESH
+refresh_interval = st.sidebar.slider("Auto Refresh (seconds)", 0, 300, 0)
 
-    awards_df = load_award_data()   # ✅ SOURCE OF TRUTH
-    news_df = fetch_all_news(list(awards_df["company"].unique()))
+if refresh_interval > 0:
+    time.sleep(refresh_interval)
+    st.rerun()
 
-    # -----------------------------
-    # ✅ KPIs (CORRECT)
-    # -----------------------------
-    total_barrels = awards_df["volume"].sum()
-    total_companies = awards_df["company"].nunique()
-    top_company = awards_df.groupby("company")["volume"].sum().idxmax()
+if st.button("🔄 Refresh Now"):
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total Barrels", f"{total_barrels:,.0f}")
-    col2.metric("Companies", total_companies)
-    col3.metric("Top Recipient", top_company)
+    df = load_award_data()
+    companies = list(df["company"].unique())
+    news_df = fetch_news(companies)
 
-    st.markdown("---")
+    file_path = save_news(news_df)
 
-    # -----------------------------
-    # 📊 CHARTS (CORRECT)
-    # -----------------------------
-    st.subheader("📊 Company Ranking")
-    ranking = awards_df.groupby("company")["volume"].sum().sort_values(ascending=False)
-    st.bar_chart(ranking)
+    # KPIs
+    total = df["volume"].sum()
+    top = df.groupby("company")["volume"].sum().idxmax()
 
-    st.subheader("📈 Barrels by Release")
-    release_dist = awards_df.groupby("release")["volume"].sum()
-    st.bar_chart(release_dist)
-
-    st.markdown("---")
+    c1, c2 = st.columns(2)
+    c1.metric("Total Barrels", f"{total:,}")
+    c2.metric("Top Company", top)
 
     # -----------------------------
-    # 📋 TABLE (NO DUPLICATION)
+    # 🧠 EXEC SUMMARY
     # -----------------------------
-    st.subheader("📋 SPR Awards Table")
-    st.dataframe(awards_df, use_container_width=True)
+    st.subheader("🧠 Executive Summary")
+    st.info(generate_summary(df))
 
     # -----------------------------
-    # 📰 NEWS ANALYTICS
+    # 📊 MARKET SHARE
     # -----------------------------
-    st.subheader("🧠 News Insights")
+    st.subheader("📊 Market Share")
+    st.bar_chart(df.groupby("company")["volume"].sum())
 
+    # -----------------------------
+    # 📺 LIVE VIDEO
+    # -----------------------------
+    st.subheader("📺 Live News")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.components.v1.iframe("https://www.youtube.com/embed/9Auq9mYxFEE", height=300)
+    with col2:
+        st.components.v1.iframe("https://www.youtube.com/embed/dp8PhLsUcFE", height=300)
+
+    # -----------------------------
+    # 📢 TICKER
+    # -----------------------------
     if not news_df.empty:
-        # Top mentioned companies
-        mentions = news_df["company"].value_counts()
-        st.write("Top Mentioned Companies")
-        st.bar_chart(mentions)
+        headlines = " 🔹 ".join(news_df["headline"].head(10))
+        st.markdown(f"<marquee>{headlines}</marquee>", unsafe_allow_html=True)
 
-        # Trend
-        news_df["date"] = pd.to_datetime(news_df["date"], errors="coerce")
-        trend = news_df.groupby(news_df["date"].dt.date).size()
-        st.write("News Trend")
-        st.line_chart(trend)
+    # -----------------------------
+    # 🔔 ALERTS
+    # -----------------------------
+    st.subheader("🚨 Alerts")
 
-        st.markdown("---")
+    alerts = news_df[news_df["relevance"] >= 3]
 
-        # News feed
-        st.subheader("📰 Relevant News")
-        for _, row in news_df.sort_values("relevance", ascending=False).head(10).iterrows():
-            st.markdown(f"""
-**{row['company']}**  
-📰 {row['headline']}  
-📅 {row['date']} | 🏷️ {row['source']} | 🔎 {row['relevance']}
-""")
-            st.markdown("---")
+    if not alerts.empty:
+        for _, r in alerts.iterrows():
+            st.warning(f"{r['company']} - {r['headline']}")
     else:
-        st.info("No news found")
+        st.success("No critical alerts")
+
+    # -----------------------------
+    # 📥 DOWNLOAD
+    # -----------------------------
+    with open(file_path, "rb") as f:
+        st.download_button("Download News Log", f, "news.xlsx")
 
 else:
     st.info("Click refresh to load dashboard")

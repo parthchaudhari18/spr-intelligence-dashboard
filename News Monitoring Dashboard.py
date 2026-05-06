@@ -141,11 +141,11 @@ if st.button("🔄 Refresh Data"):
 
     with col1:
        st.markdown("**Reuters Live**")
-        st.video("https://www.youtube.com/watch?v=9y9w6WZbq_s")
+       st.video("https://www.youtube.com/watch?v=9y9w6WZbq_s")
 
     with col2:
         st.markdown("**Bloomberg Live**")
-         st.video("https://www.youtube.com/watch?v=dp8PhLsUcFE")
+        st.video("https://www.youtube.com/watch?v=dp8PhLsUcFE")
 
     # -----------------------------
     # 📢 NEWS TICKER

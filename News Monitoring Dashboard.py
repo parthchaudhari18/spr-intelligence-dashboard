@@ -16,16 +16,36 @@ NEWS_API_KEY = "c074f6b4036a4589a36914103ef44c92"
 @st.cache_data
 def load_award_data():
     data = [
+        # Release 1
+        {"company": "BP Products North America", "volume": 5000000, "release": "R1"},
+        {"company": "Energy Transfer Crude Marketing LLC", "volume": 375000, "release": "R1"},
+        {"company": "Gunvor USA LLC", "volume": 3085000, "release": "R1"},
+        {"company": "Marathon Petroleum Company LP", "volume": 7700000, "release": "R1"},
+        {"company": "Mercuria Energy America LLC", "volume": 2000000, "release": "R1"},
         {"company": "Shell Trading (US) Company", "volume": 16200000, "release": "R1"},
         {"company": "Trafigura Trading LLC", "volume": 8860000, "release": "R1"},
-        {"company": "Marathon Petroleum Company LP", "volume": 7700000, "release": "R1"},
-        {"company": "BP Products North America", "volume": 5000000, "release": "R1"},
-        {"company": "Gunvor USA LLC", "volume": 3085000, "release": "R1"},
-        {"company": "Mercuria Energy America LLC", "volume": 2000000, "release": "R1"},
         {"company": "Vitol Inc.", "volume": 2000000, "release": "R1"},
-        {"company": "Energy Transfer Crude Marketing LLC", "volume": 375000, "release": "R1"},
+
+        # Release 1.a
+        {"company": "Gunvor USA LLC", "volume": 1100000, "release": "R1.a"},
+        {"company": "Macquarie Commodities Trading US", "volume": 2000000, "release": "R1.a"},
+        {"company": "Phillips 66 Company", "volume": 2900000, "release": "R1.a"},
+        {"company": "Trafigura Trading LLC", "volume": 2480000, "release": "R1.a"},
+
+        # Release 1.b
+        {"company": "Alon USA", "volume": 1000000, "release": "R1.b"},
+        {"company": "BP Products North America", "volume": 1000000, "release": "R1.b"},
+        {"company": "Energy Transfer Crude Marketing", "volume": 1100000, "release": "R1.b"},
+        {"company": "ExxonMobil Oil Corporation", "volume": 3000000, "release": "R1.b"},
+        {"company": "Macquarie Commodities Trading US", "volume": 2500000, "release": "R1.b"},
+        {"company": "Marathon Petroleum Company", "volume": 2000000, "release": "R1.b"},
+        {"company": "Shell Trading (US) Company", "volume": 1900000, "release": "R1.b"},
+        {"company": "Trafigura Trading LLC", "volume": 10030000, "release": "R1.b"},
+        {"company": "Vitol", "volume": 3500000, "release": "R1.b"},
     ]
-    return pd.DataFrame(data)
+
+    df = pd.DataFrame(data)
+    return df
 
 # -----------------------------
 # 🧠 RELEVANCE
@@ -134,6 +154,25 @@ if st.button("🔄 Refresh Dashboard"):
             time.sleep(2)
 
     st.markdown("---")
+    # -----------------------------
+    # 🌍 MAP TABS
+    # -----------------------------
+    st.markdown("---")
+    st.subheader("🌍 Global Intelligence")
+
+    tab1, tab2 = st.tabs(["World Monitor", "Energy Flow"])
+
+    with tab1:
+         st.components.v1.iframe(
+             "https://www.worldmonitor.app/",
+             height=500
+         )
+
+    with tab2:
+         st.components.v1.iframe(
+             "https://flowmaps.llnl.gov/",
+             height=500
+         )
 
     # 📊 CHARTS
     st.subheader("📊 Company Allocation")

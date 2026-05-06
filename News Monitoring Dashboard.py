@@ -140,18 +140,12 @@ if st.button("🔄 Refresh Data"):
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown("**CNBC Live**")
-        st.components.v1.iframe(
-            "https://www.youtube.com/embed/9Auq9mYxFEE",
-            height=300
-        )
+       st.markdown("**Reuters Live**")
+        st.video("https://www.youtube.com/watch?v=9y9w6WZbq_s")
 
     with col2:
         st.markdown("**Bloomberg Live**")
-        st.components.v1.iframe(
-            "https://www.youtube.com/embed/dp8PhLsUcFE",
-            height=300
-        )
+         st.video("https://www.youtube.com/watch?v=dp8PhLsUcFE")
 
     # -----------------------------
     # 📢 NEWS TICKER

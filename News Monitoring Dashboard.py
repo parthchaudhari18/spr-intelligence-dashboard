@@ -165,35 +165,58 @@ if st.button("🔄 Refresh Dashboard"):
         """
 
         st.markdown(ticker_html, unsafe_allow_html=True)
-    # 🎞️ NEWS SLIDES
-    st.subheader("📰 Live News Slides")
+    # -----------------------------
+# 📢 PROFESSIONAL STOCK TICKER (SLOW + SMOOTH)
+# -----------------------------
+if not news_df.empty:
 
-    if not news_df.empty:
-        slide_placeholder = st.empty()
+    headlines = "   ◆   ".join(
+        [f"{row['company']}: {row['headline']}" for _, row in news_df.head(12).iterrows()]
+    )
 
-        for i in range(min(len(news_df), 10)):
-            row = news_df.iloc[i]
+    ticker_html = f"""
+    <style>
+    .ticker-container {{
+        width: 100%;
+        overflow: hidden;
+        background: #0a0a0a;
+        border-top: 1px solid #00ffcc;
+        border-bottom: 1px solid #00ffcc;
+        padding: 12px 0;
+    }}
 
-            slide_placeholder.markdown(f"""
-            <div style="
-                padding:20px;
-                border-radius:15px;
-                background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-                color:white;
-                text-align:center;
-                font-size:20px;
-                height:200px;
-            ">
-                <h3>{row['company']}</h3>
-                <p>{row['headline']}</p>
-                <small>{row['date']} | {row['source']}</small>
-            </div>
-            """, unsafe_allow_html=True)
+    .ticker-track {{
+        display: flex;
+        width: max-content;
+        animation: scroll-left 60s linear infinite;
+    }}
 
-            time.sleep(2)
+    .ticker-item {{
+        margin-right: 80px;
+        font-size: 17px;
+        font-weight: 500;
+        color: #00ffcc;
+    }}
 
-    st.markdown("---")
-   
+    @keyframes scroll-left {{
+        from {{
+            transform: translateX(0%);
+        }}
+        to {{
+            transform: translateX(-50%);
+        }}
+    }}
+    </style>
+
+    <div class="ticker-container">
+        <div class="ticker-track">
+            {"".join([f"<div class='ticker-item'>{h}</div>" for h in headlines.split("   ◆   ")])}
+            {"".join([f"<div class='ticker-item'>{h}</div>" for h in headlines.split("   ◆   ")])}
+        </div>
+    </div>
+    """
+
+    st.markdown(ticker_html, unsafe_allow_html=True)
     # 📊 CHARTS
     st.subheader("📊 Company Allocation")
     st.bar_chart(awards.groupby("company")["volume"].sum())

@@ -166,7 +166,7 @@ if st.button("🔄 Refresh Dashboard"):
          st.components.v1.iframe(
              "https://openinframap.org/#3.99/22.87/16.01",
              height=500
-
+         )
     # 📊 CHARTS
     st.subheader("📊 Company Allocation")
     st.bar_chart(awards.groupby("company")["volume"].sum())
